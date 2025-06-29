@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Position Size Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgb(234, 231, 236);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px #050505b2;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #3a5169 0%, #3498db 100%);
+            color: rgb(255, 255, 255);
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+            transform: rotate(30deg);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .mode-selector {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .mode-selector select {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .mode-selector select option {
+            background: #3a5169;
+            color: white;
+        }
+
+        .reset-all-btn {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reset-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(231, 76, 60, 0.4);
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .card-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 42px;
+            color: #667eea;
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            width: 100%;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-danger:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .result-value.success {
+            color: #28a745;
+        }
+
+        .result-value.warning {
+            color: #ffc107;
+        }
+
+        .result-value.danger {
+            color: #dc3545;
+        }
+
+        .rr-display {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .rr-good {
+            color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .rr-poor {
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        .pyramid-section {
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
+
+        .pyramid-mode-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .pyramid-mode-info h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .pyramid-entry {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pyramid-entry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .pyramid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .pyramid-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .pyramid-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .pyramid-inputs input {
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 0.95rem;
+        }
+
+        .pyramid-inputs input:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+
+        .pyramid-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .pyramid-result-item {
+            text-align: center;
+        }
+
+        .pyramid-result-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .pyramid-result-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .totals-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 2px solid #28a745;
+        }
+
+        .totals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .total-item {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .total-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .total-label {
+            font-size: 1rem;
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .total-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #28a745;
+        }
+
+        .total-value.danger {
+            color: #dc3545;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            font-style: italic;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #e9ecef;
+        }
+
+        .pnl-section {
+            background: linear-gradient(135deg, #e6f7ff 0%, #f0faff 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 2px solid #3498db;
+        }
+
+        .pnl-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .pnl-item {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pnl-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #3498db, #1a5276);
+        }
+
+        .pnl-label {
+            font-size: 1rem;
+            color: #495057;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .pnl-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #3498db;
+        }
+
+        .pnl-value.success {
+            color: #28a745;
+        }
+
+        .pnl-value.danger {
+            color: #dc3545;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .risk-meter {
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .risk-meter-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .risk-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .auto-pyramid-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Advanced Position Size Calculator</h1>
+            <p>
+            <h2>by vansh panchal</h2>
+            </p>
+            <p>Pyramiding with PNL calculation and unlimited entries</p>
+
+            <div class="header-controls">
+                <div class="mode-selector">
+                    <label for="pyramidMode" style="color: white; margin-right: 10px;">Mode:</label>
+                    <select id="pyramidMode" onchange="handleModeChange()">
+                        <option value="manual">Manual Mode</option>
+                        <option value="auto">3-Stage Auto Mode</option>
+                    </select>
+                </div>
+                <button class="reset-all-btn" onclick="resetAll()">
+                    <i class="fas fa-refresh"></i> Reset All
+                </button>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Input Section -->
+            <div class="card">
+                <h2 class="card-title">Input Parameters</h2>
+
+                <div class="form-group">
+                    <label for="accountCapital">Account Capital (₹)</label>
+                    <input type="number" id="accountCapital" placeholder="1,00,000" min="1" step="1" value="100000">
+                    <i class="fas fa-rupee-sign input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label for="riskPercent">Risk % per Trade</label>
+                    <input type="number" id="riskPercent" placeholder="2.0" min="0.1" max="100" step="0.1" value="2">
+                    <i class="fas fa-percentage input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label for="entryPrice">Entry Price (₹)</label>
+                    <input type="number" id="entryPrice" placeholder="100.00" min="0.01" step="0.01" value="100">
+                    <i class="fas fa-tag input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label for="stopLoss">Stop Loss (₹)</label>
+                    <input type="number" id="stopLoss" placeholder="95.00" min="0.01" step="0.01" value="95">
+                    <i class="fas fa-ban input-icon"></i>
+                </div>
+
+                <div class="form-group">
+                    <label for="targetPrice">Target Price (₹) <small>(Optional)</small></label>
+                    <input type="number" id="targetPrice" placeholder="110.00" min="0.01" step="0.01" value="110">
+                    <i class="fas fa-bullseye input-icon"></i>
+                </div>
+
+                <button class="btn btn-primary" onclick="calculateMainPosition()">
+                    <i class="fas fa-calculator"></i> Calculate Main Position
+                </button>
+
+                <button class="btn btn-success" onclick="addPyramidEntry()" id="addPyramidBtn">
+                    <i class="fas fa-plus-circle"></i> Add Pyramid Entry
+                </button>
+
+                <div id="alerts"></div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="card">
+                <h2 class="card-title">Main Position Results</h2>
+                <div id="mainResults">
+                    <div class="empty-state">
+                        <i class="fas fa-calculator fa-2x"></i>
+                        <p>Calculate your main position first</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pyramid Entries Section -->
+        <div class="pyramid-section">
+            <div class="card">
+                <h2 class="card-title">Pyramid Entries</h2>
+                <div id="pyramidModeInfo" style="display: none;"></div>
+                <div id="pyramidEntries">
+                    <div class="empty-state">
+                        <i class="fas fa-layer-group fa-2x"></i>
+                        <p>No pyramid entries yet. Click "Add Pyramid Entry" to start.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Meter -->
+        <div class="card" id="riskMeter" style="display: none;">
+            <h2 class="card-title">Risk Allocation</h2>
+            <div class="risk-meter">
+                <div class="risk-meter-fill" id="riskMeterFill"></div>
+            </div>
+            <div class="risk-labels">
+                <span>0%</span>
+                <span>Risk Used: <span id="riskPercentUsed">0%</span></span>
+                <span>100%</span>
+            </div>
+        </div>
+
+        <!-- Totals Section -->
+        <div class="totals-section" id="totalsSection" style="display: none;">
+            <h2 class="card-title">Portfolio Summary</h2>
+            <div class="totals-grid" id="totalsGrid"></div>
+        </div>
+
+        <!-- PNL Section -->
+        <div class="pnl-section" id="pnlSection" style="display: none;">
+            <h2 class="card-title">Profit & Loss (PNL) Analysis</h2>
+            <div class="form-group">
+                <label for="currentMarketPrice">Current Market Price (₹)</label>
+                <input type="number" id="currentMarketPrice" placeholder="Enter current price" min="0.01" step="0.01"
+                    oninput="updatePNL()">
+                <i class="fas fa-chart-line input-icon"></i>
+            </div>
+            <div class="pnl-grid" id="pnlGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        let pyramidCounter = 0;
+        let mainPosition = null;
+        let pyramidEntries = [];
+        let accountCapital = 0;
+        let riskPercent = 0;
+        let maxRiskAmount = 0;
+        let pyramidMode = 'manual'; // Default mode
+
+        // Utility Functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 2
+            }).format(amount);
+        }
+
+        function formatNumber(num) {
+            return new Intl.NumberFormat('en-IN').format(num);
+        }
+
+        function calculateRiskReward(entryPrice, stopLoss, targetPrice) {
+            if (!targetPrice || targetPrice <= entryPrice) return null;
+            const risk = entryPrice - stopLoss;
+            const reward = targetPrice - entryPrice;
+            return reward / risk;
+        }
+
+        function getRRDisplay(rr) {
+            if (rr === null) return '';
+            const rrClass = rr >= 2 ? 'rr-good' : 'rr-poor';
+            const icon = rr >= 2 ? '✓' : '⚠';
+            return `<span class="rr-display ${rrClass}">${icon} RR: ${rr.toFixed(2)}</span>`;
+        }
+
+        function showAlert(message, type = 'danger') {
+            const alertsDiv = document.getElementById('alerts');
+            const alertId = 'alert-' + Date.now();
+
+            alertsDiv.innerHTML = `
+                <div class="alert alert-${type} fade-in" id="${alertId}">
+                    ${message}
+                </div>
+            `;
+
+            setTimeout(() => {
+                const alert = document.getElementById(alertId);
+                if (alert) alert.remove();
+            }, 5000);
+        }
+
+        function validateMainInputs() {
+            accountCapital = parseFloat(document.getElementById('accountCapital').value);
+            riskPercent = parseFloat(document.getElementById('riskPercent').value);
+            const entryPrice = parseFloat(document.getElementById('entryPrice').value);
+            const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+            const targetPrice = parseFloat(document.getElementById('targetPrice').value) || null;
+
+            if (!accountCapital || !riskPercent || !entryPrice || !stopLoss) {
+                showAlert('Please fill in all required fields.');
+                return null;
+            }
+
+            if (accountCapital <= 0) {
+                showAlert('Account capital must be positive.');
+                return null;
+            }
+
+            if (riskPercent <= 0 || riskPercent > 100) {
+                showAlert('Risk percentage must be between 0.1% and 100%.');
+                return null;
+            }
+
+            if (entryPrice <= stopLoss) {
+                showAlert('Entry price must be greater than stop loss.');
+                return null;
+            }
+
+            if (targetPrice && targetPrice <= entryPrice) {
+                showAlert('Target price must be greater than entry price for long positions.');
+                return null;
+            }
+
+            return {
+                accountCapital,
+                riskPercent,
+                entryPrice,
+                stopLoss,
+                targetPrice
+            };
+        }
+
+        function calculateMainPosition() {
+            const inputs = validateMainInputs();
+            if (!inputs) return;
+
+            const {
+                accountCapital,
+                riskPercent,
+                entryPrice,
+                stopLoss,
+                targetPrice
+            } = inputs;
+
+            maxRiskAmount = (accountCapital * riskPercent) / 100;
+            const riskPerShare = entryPrice - stopLoss;
+            const quantity = Math.floor(maxRiskAmount / riskPerShare);
+            const positionSize = quantity * entryPrice;
+            const actualRisk = quantity * riskPerShare;
+            const potentialProfit = targetPrice ? (targetPrice - entryPrice) * quantity : null;
+            const riskReward = calculateRiskReward(entryPrice, stopLoss, targetPrice);
+
+            mainPosition = {
+                quantity,
+                positionSize,
+                riskPerShare,
+                actualRisk,
+                entryPrice,
+                stopLoss,
+                targetPrice,
+                potentialProfit,
+                riskReward
+            };
+
+            displayMainResults();
+
+            // Handle auto-pyramiding
+            if (pyramidMode === 'auto') {
+                createAutoPyramidEntries();
+            }
+
+            updateTotals();
+            updatePNL();
+            updateRiskMeter();
+            showAlert('Main position calculated successfully!', 'success');
+        }
+
+        function displayMainResults() {
+            const resultsDiv = document.getElementById('mainResults');
+            let profitHtml = '';
+            let rrHtml = '';
+
+            if (mainPosition.potentialProfit !== null) {
+                profitHtml = `
+                    <div class="result-item">
+                        <div class="result-label">Potential Profit</div>
+                        <div class="result-value ${mainPosition.potentialProfit >= 0 ? 'success' : 'danger'}">
+                            ${formatCurrency(mainPosition.potentialProfit)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (mainPosition.riskReward !== null) {
+                rrHtml = `
+                    <div class="result-item">
+                        <div class="result-label">Risk/Reward</div>
+                        <div class="result-value ${mainPosition.riskReward >= 2 ? 'success' : 'warning'}">
+                            ${mainPosition.riskReward.toFixed(2)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = `
+                <div class="results-grid">
+                    <div class="result-item">
+                        <div class="result-label">Quantity</div>
+                        <div class="result-value">${formatNumber(mainPosition.quantity)}</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Position Size</div>
+                        <div class="result-value">${formatCurrency(mainPosition.positionSize)}</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Risk per Share</div>
+                        <div class="result-value">${formatCurrency(mainPosition.riskPerShare)}</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Actual Risk</div>
+                        <div class="result-value danger">${formatCurrency(mainPosition.actualRisk)}</div>
+                    </div>
+                    ${profitHtml}
+                    ${rrHtml}
+                </div>
+            `;
+        }
+
+        function addPyramidEntry() {
+            if (pyramidMode === 'auto') {
+                showAlert('Cannot add manual pyramid entries in Auto Mode. Switch to Manual Mode first.', 'warning');
+                return;
+            }
+            if (!mainPosition) {
+                showAlert('Please calculate the main position first.', 'warning');
+                return;
+            }
+
+            pyramidCounter++;
+            const entryId = `pyramid-${pyramidCounter}`;
+            const pyramidEntriesDiv = document.getElementById('pyramidEntries');
+
+            const newEntryHtml = `
+                <div class="pyramid-entry fade-in" id="${entryId}">
+                    <div class="pyramid-header">
+                        <h3 class="pyramid-title">Pyramid Entry #${pyramidCounter}</h3>
+                        <button class="btn btn-danger" onclick="removePyramidEntry('${entryId}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="pyramid-inputs">
+                        <div class="form-group">
+                            <label for="${entryId}-quantity">Quantity</label>
+                            <input type="number" id="${entryId}-quantity" placeholder="e.g., 50" min="1" step="1" oninput="calculatePyramidEntry('${entryId}')">
+                        </div>
+                        <div class="form-group">
+                            <label for="${entryId}-entryPrice">Entry Price (₹)</label>
+                            <input type="number" id="${entryId}-entryPrice" placeholder="e.g., 105.00" min="0.01" step="0.01" oninput="calculatePyramidEntry('${entryId}')">
+                        </div>
+                    </div>
+                    <div class="pyramid-results" id="${entryId}-results">
+                        <div class="empty-state">
+                            <p>Enter quantity and price to calculate.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Remove empty state if it exists
+            const emptyState = pyramidEntriesDiv.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            pyramidEntriesDiv.insertAdjacentHTML('beforeend', newEntryHtml);
+
+            // Add a placeholder object to the array
+            pyramidEntries.push({
+                id: entryId,
+                quantity: 0,
+                entryPrice: 0,
+                positionSize: 0,
+                actualRisk: 0,
+                potentialProfit: 0
+            });
+        }
+
+        function calculatePyramidEntry(id) {
+            const quantityInput = document.getElementById(`${id}-quantity`);
+            const entryPriceInput = document.getElementById(`${id}-entryPrice`);
+            const resultsDiv = document.getElementById(`${id}-results`);
+
+            const quantity = parseFloat(quantityInput.value);
+            const entryPrice = parseFloat(entryPriceInput.value);
+
+            if (isNaN(quantity) || isNaN(entryPrice) || quantity <= 0 || entryPrice <= 0) {
+                resultsDiv.innerHTML = `
+                    <div class="empty-state">
+                        <p>Enter valid quantity and price.</p>
+                    </div>
+                `;
+                // Update the entry in the array to reflect invalid state
+                const index = pyramidEntries.findIndex(entry => entry.id === id);
+                if (index !== -1) {
+                    pyramidEntries[index] = {
+                        id: id,
+                        quantity: 0,
+                        entryPrice: 0,
+                        positionSize: 0,
+                        actualRisk: 0,
+                        potentialProfit: 0
+                    };
+                }
+                updateTotals();
+                updatePNL();
+                updateRiskMeter();
+                return;
+            }
+
+            if (!mainPosition) {
+                showAlert('Please calculate the main position first.', 'warning');
+                return;
+            }
+
+            const positionSize = quantity * entryPrice;
+            // For pyramid entries, risk is calculated based on the main position's stop loss
+            const riskPerShare = entryPrice - mainPosition.stopLoss;
+            const actualRisk = quantity * riskPerShare;
+            const potentialProfit = mainPosition.targetPrice ? (mainPosition.targetPrice - entryPrice) * quantity : null;
+
+            const index = pyramidEntries.findIndex(entry => entry.id === id);
+            if (index !== -1) {
+                pyramidEntries[index] = {
+                    id: id,
+                    quantity,
+                    entryPrice,
+                    positionSize,
+                    actualRisk,
+                    potentialProfit
+                };
+            }
+
+            let profitHtml = '';
+            if (potentialProfit !== null) {
+                profitHtml = `
+                    <div class="pyramid-result-item">
+                        <div class="pyramid-result-label">Pot. Profit</div>
+                        <div class="pyramid-result-value ${potentialProfit >= 0 ? 'success' : 'danger'}">
+                            ${formatCurrency(potentialProfit)}
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultsDiv.innerHTML = `
+                <div class="pyramid-result-item">
+                    <div class="pyramid-result-label">Pos. Size</div>
+                    <div class="pyramid-result-value">${formatCurrency(positionSize)}</div>
+                </div>
+                <div class="pyramid-result-item">
+                    <div class="pyramid-result-label">Actual Risk</div>
+                    <div class="pyramid-result-value danger">${formatCurrency(actualRisk)}</div>
+                </div>
+                ${profitHtml}
+            `;
+
+            updateTotals();
+            updatePNL();
+            updateRiskMeter();
+        }
+
+        function removePyramidEntry(id) {
+            const entryElement = document.getElementById(id);
+            if (entryElement) {
+                entryElement.remove();
+                pyramidEntries = pyramidEntries.filter(entry => entry.id !== id);
+                if (pyramidEntries.length === 0) {
+                    document.getElementById('pyramidEntries').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-layer-group fa-2x"></i>
+                            <p>No pyramid entries yet. Click "Add Pyramid Entry" to start.</p>
+                        </div>
+                    `;
+                }
+                updateTotals();
+                updatePNL();
+                updateRiskMeter();
+            }
+        }
+
+        function createAutoPyramidEntries() {
+            if (!mainPosition) {
+                showAlert('Calculate the main position first to use Auto Mode.', 'warning');
+                return;
+            }
+            if (mainPosition.targetPrice === null) {
+                showAlert('Target Price is required for Auto Mode pyramiding.', 'warning');
+                return;
+            }
+
+            // Clear existing pyramid entries
+            pyramidEntries = [];
+            document.getElementById('pyramidEntries').innerHTML = '';
+            pyramidCounter = 0;
+
+            const initialEntryPrice = mainPosition.entryPrice;
+            const targetPrice = mainPosition.targetPrice;
+            const stopLoss = mainPosition.stopLoss;
+
+            // Distribute remaining risk (if any) among pyramid entries
+            const remainingRisk = maxRiskAmount - (mainPosition.actualRisk || 0);
+            const riskPerPyramidEntry = remainingRisk / 3; // Divide remaining risk by 3 stages
+
+            // Calculate price increments for pyramid entries
+            const priceRange = targetPrice - initialEntryPrice;
+            const priceIncrement = priceRange / 4; // 3 pyramid entries, so 4 segments
+
+            for (let i = 1; i <= 3; i++) {
+                pyramidCounter++;
+                const entryId = `pyramid-${pyramidCounter}`;
+                const pyramidEntriesDiv = document.getElementById('pyramidEntries');
+
+                const pyramidEntryPrice = initialEntryPrice + (priceIncrement * i);
+                const riskPerShare = pyramidEntryPrice - stopLoss;
+                let quantity = 0;
+
+                if (riskPerShare > 0) {
+                    quantity = Math.floor(riskPerPyramidEntry / riskPerShare);
+                }
+
+                const positionSize = quantity * pyramidEntryPrice;
+                const actualRisk = quantity * riskPerShare;
+                const potentialProfit = (targetPrice - pyramidEntryPrice) * quantity;
+
+                const newEntryHtml = `
+                    <div class="pyramid-entry fade-in" id="${entryId}">
+                        <div class="pyramid-header">
+                            <h3 class="pyramid-title">Pyramid Entry #${pyramidCounter} <span class="auto-pyramid-badge">Auto</span></h3>
+                            <button class="btn btn-danger" onclick="removePyramidEntry('${entryId}')" disabled>
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="pyramid-inputs">
+                            <div class="form-group">
+                                <label for="${entryId}-quantity">Quantity</label>
+                                <input type="number" id="${entryId}-quantity" value="${quantity}" min="1" step="1" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="${entryId}-entryPrice">Entry Price (₹)</label>
+                                <input type="number" id="${entryId}-entryPrice" value="${pyramidEntryPrice.toFixed(2)}" min="0.01" step="0.01" readonly>
+                            </div>
+                        </div>
+                        <div class="pyramid-results" id="${entryId}-results">
+                            <div class="pyramid-result-item">
+                                <div class="pyramid-result-label">Pos. Size</div>
+                                <div class="pyramid-result-value">${formatCurrency(positionSize)}</div>
+                            </div>
+                            <div class="pyramid-result-item">
+                                <div class="pyramid-result-label">Actual Risk</div>
+                                <div class="pyramid-result-value danger">${formatCurrency(actualRisk)}</div>
+                            </div>
+                            <div class="pyramid-result-item">
+                                <div class="pyramid-result-label">Pot. Profit</div>
+                                <div class="pyramid-result-value ${potentialProfit >= 0 ? 'success' : 'danger'}">
+                                    ${formatCurrency(potentialProfit)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                pyramidEntriesDiv.insertAdjacentHTML('beforeend', newEntryHtml);
+
+                pyramidEntries.push({
+                    id: entryId,
+                    quantity,
+                    entryPrice: pyramidEntryPrice,
+                    positionSize,
+                    actualRisk,
+                    potentialProfit
+                });
+            }
+            showAlert('3-Stage Auto Pyramiding entries generated!', 'success');
+        }
+
+
+        function handleModeChange() {
+            pyramidMode = document.getElementById('pyramidMode').value;
+            const addPyramidBtn = document.getElementById('addPyramidBtn');
+            const pyramidModeInfo = document.getElementById('pyramidModeInfo');
+
+            if (pyramidMode === 'auto') {
+                addPyramidBtn.style.display = 'none';
+                pyramidModeInfo.style.display = 'block';
+                pyramidModeInfo.innerHTML = `
+                    <h3><i class="fas fa-info-circle"></i> Auto Pyramiding Mode</h3>
+                    <p>In this mode, 3 pyramid entries are automatically generated based on your main position's entry and target prices, distributing the remaining risk.</p>
+                    <p>Manual pyramid entries are disabled.</p>
+                `;
+                // Automatically trigger auto-pyramiding if main position is calculated
+                if (mainPosition) {
+                    createAutoPyramidEntries();
+                } else {
+                    // Clear pyramid entries if main position not calculated
+                    pyramidEntries = [];
+                    document.getElementById('pyramidEntries').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-layer-group fa-2x"></i>
+                            <p>Calculate your main position first to use Auto Mode.</p>
+                        </div>
+                    `;
+                }
+            } else { // Manual Mode
+                addPyramidBtn.style.display = 'flex'; // Use flex to maintain button styling
+                pyramidModeInfo.style.display = 'none';
+                // Clear auto-generated entries and allow manual ones
+                pyramidEntries = [];
+                document.getElementById('pyramidEntries').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-layer-group fa-2x"></i>
+                        <p>No pyramid entries yet. Click "Add Pyramid Entry" to start.</p>
+                    </div>
+                `;
+            }
+            updateTotals();
+            updatePNL();
+            updateRiskMeter();
+        }
+
+
+        function updateTotals() {
+            const totalsSection = document.getElementById('totalsSection');
+            const totalsGrid = document.getElementById('totalsGrid');
+
+            let totalQuantity = 0;
+            let totalPositionSize = 0;
+            let totalActualRisk = 0;
+            let weightedAvgEntryPrice = 0;
+            let totalWeightedEntrySum = 0;
+
+            if (mainPosition) {
+                totalQuantity += mainPosition.quantity;
+                totalPositionSize += mainPosition.positionSize;
+                totalActualRisk += mainPosition.actualRisk;
+                totalWeightedEntrySum += mainPosition.quantity * mainPosition.entryPrice;
+            }
+
+            pyramidEntries.forEach(entry => {
+                if (entry.quantity > 0 && entry.entryPrice > 0) {
+                    totalQuantity += entry.quantity;
+                    totalPositionSize += entry.positionSize;
+                    totalActualRisk += entry.actualRisk;
+                    totalWeightedEntrySum += entry.quantity * entry.entryPrice;
+                }
+            });
+
+            if (totalQuantity > 0) {
+                weightedAvgEntryPrice = totalWeightedEntrySum / totalQuantity;
+            }
+
+            if (mainPosition || pyramidEntries.length > 0) {
+                totalsSection.style.display = 'block';
+                totalsGrid.innerHTML = `
+                    <div class="total-item">
+                        <div class="total-label">Total Quantity</div>
+                        <div class="total-value">${formatNumber(totalQuantity)}</div>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-label">Total Position Size</div>
+                        <div class="total-value">${formatCurrency(totalPositionSize)}</div>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-label">Total Risk Allocated</div>
+                        <div class="total-value danger">${formatCurrency(totalActualRisk)}</div>
+                    </div>
+                    <div class="total-item">
+                        <div class="total-label">Avg. Entry Price</div>
+                        <div class="total-value">${formatCurrency(weightedAvgEntryPrice)}</div>
+                    </div>
+                `;
+            } else {
+                totalsSection.style.display = 'none';
+            }
+        }
+
+        function updatePNL() {
+            const pnlSection = document.getElementById('pnlSection');
+            const pnlGrid = document.getElementById('pnlGrid');
+            const currentMarketPrice = parseFloat(document.getElementById('currentMarketPrice').value);
+
+            if (!mainPosition && pyramidEntries.length === 0) {
+                pnlSection.style.display = 'none';
+                return;
+            }
+
+            pnlSection.style.display = 'block';
+
+            let totalQuantity = 0;
+            let totalWeightedEntrySum = 0;
+
+            if (mainPosition) {
+                totalQuantity += mainPosition.quantity;
+                totalWeightedEntrySum += mainPosition.quantity * mainPosition.entryPrice;
+            }
+
+            pyramidEntries.forEach(entry => {
+                if (entry.quantity > 0 && entry.entryPrice > 0) {
+                    totalQuantity += entry.quantity;
+                    totalWeightedEntrySum += entry.quantity * entry.entryPrice;
+                }
+            });
+
+            if (totalQuantity === 0) {
+                pnlGrid.innerHTML = `
+                    <div class="empty-state">
+                        <p>No positions to calculate PNL.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const averageEntryPrice = totalWeightedEntrySum / totalQuantity;
+
+            let pnl = 0;
+            let pnlPercent = 0;
+
+            if (!isNaN(currentMarketPrice) && currentMarketPrice > 0) {
+                pnl = (currentMarketPrice - averageEntryPrice) * totalQuantity;
+                pnlPercent = (pnl / (averageEntryPrice * totalQuantity)) * 100;
+            }
+
+            const pnlClass = pnl >= 0 ? 'success' : 'danger';
+
+            pnlGrid.innerHTML = `
+                <div class="pnl-item">
+                    <div class="pnl-label">Average Entry Price</div>
+                    <div class="pnl-value">${formatCurrency(averageEntryPrice)}</div>
+                </div>
+                <div class="pnl-item">
+                    <div class="pnl-label">Current Market Price</div>
+                    <div class="pnl-value">${isNaN(currentMarketPrice) ? 'N/A' : formatCurrency(currentMarketPrice)}</div>
+                </div>
+                <div class="pnl-item">
+                    <div class="pnl-label">Total PNL</div>
+                    <div class="pnl-value ${pnlClass}">${formatCurrency(pnl)}</div>
+                </div>
+                <div class="pnl-item">
+                    <div class="pnl-label">PNL %</div>
+                    <div class="pnl-value ${pnlClass}">${pnlPercent.toFixed(2)}%</div>
+                </div>
+            `;
+        }
+
+        function updateRiskMeter() {
+            const riskMeterDiv = document.getElementById('riskMeter');
+            const riskMeterFill = document.getElementById('riskMeterFill');
+            const riskPercentUsedSpan = document.getElementById('riskPercentUsed');
+
+            if (!mainPosition && pyramidEntries.length === 0) {
+                riskMeterDiv.style.display = 'none';
+                return;
+            }
+
+            riskMeterDiv.style.display = 'block';
+
+            let totalActualRisk = 0;
+            if (mainPosition) {
+                totalActualRisk += mainPosition.actualRisk;
+            }
+            pyramidEntries.forEach(entry => {
+                if (entry.quantity > 0 && entry.entryPrice > 0) {
+                    totalActualRisk += entry.actualRisk;
+                }
+            });
+
+            let percentageUsed = 0;
+            if (maxRiskAmount > 0) {
+                percentageUsed = (totalActualRisk / maxRiskAmount) * 100;
+            }
+
+            // Cap at 100% for display purposes
+            percentageUsed = Math.min(percentageUsed, 100);
+
+            riskMeterFill.style.width = `${percentageUsed}%`;
+            riskPercentUsedSpan.textContent = `${percentageUsed.toFixed(2)}%`;
+
+            if (percentageUsed > 100) {
+                riskMeterFill.style.background = 'linear-gradient(135deg, #dc3545, #c82333)'; // Red for over-risk
+                riskPercentUsedSpan.style.color = '#dc3545';
+            } else if (percentageUsed > 75) {
+                riskMeterFill.style.background = 'linear-gradient(135deg, #ffc107, #e0a800)'; // Orange for high risk
+                riskPercentUsedSpan.style.color = '#ffc107';
+            } else {
+                riskMeterFill.style.background = 'linear-gradient(135deg, #28a745, #20c997)'; // Green for healthy risk
+                riskPercentUsedSpan.style.color = '#28a745';
+            }
+        }
+
+
+        function resetAll() {
+            // Reset main inputs
+            document.getElementById('accountCapital').value = '100000';
+            document.getElementById('riskPercent').value = '2';
+            document.getElementById('entryPrice').value = '100';
+            document.getElementById('stopLoss').value = '95';
+            document.getElementById('targetPrice').value = '110';
+            document.getElementById('currentMarketPrice').value = ''; // Clear market price
+
+            // Reset internal state
+            mainPosition = null;
+            pyramidEntries = [];
+            pyramidCounter = 0;
+            accountCapital = 0;
+            riskPercent = 0;
+            maxRiskAmount = 0;
+
+            // Reset display elements
+            document.getElementById('mainResults').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calculator fa-2x"></i>
+                    <p>Calculate your main position first</p>
+                </div>
+            `;
+            document.getElementById('pyramidEntries').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-layer-group fa-2x"></i>
+                    <p>No pyramid entries yet. Click "Add Pyramid Entry" to start.</p>
+                </div>
+            `;
+            document.getElementById('totalsSection').style.display = 'none';
+            document.getElementById('pnlSection').style.display = 'none';
+            document.getElementById('riskMeter').style.display = 'none';
+            document.getElementById('alerts').innerHTML = ''; // Clear alerts
+
+            // Reset mode to manual and update UI
+            document.getElementById('pyramidMode').value = 'manual';
+            handleModeChange(); // Call to ensure UI reflects manual mode correctly
+
+            showAlert('All data has been reset!', 'success');
+        }
+
+        // Initial call to set up the mode display
+        document.addEventListener('DOMContentLoaded', () => {
+            handleModeChange();
+        });
+    </script>
+</body>
+
+</html>
